@@ -12,43 +12,30 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class MoneyLaundering
-{
-    private TransactionAnalyzer transactionAnalyzer;
-    private TransactionReader transactionReader;
-    private int amountOfFilesTotal;
-    private AtomicInteger amountOfFilesProcessed;
+public class MoneyLaundering{
+    static private TransactionAnalyzer transactionAnalyzer;
+    static private TransactionReader transactionReader;
+    static private int amountOfFilesTotal;
+    static public AtomicInteger amountOfFilesProcessed;
+    static private List<File> transactionFiles;
+    static private int numHilos = 5; // Cantidad de hilos que se quieren ejecutar.
+    static private AccountReporterThread[] listHilos;
 
-    public MoneyLaundering()
-    {
+    public MoneyLaundering(){
         transactionAnalyzer = new TransactionAnalyzer();
         transactionReader = new TransactionReader();
         amountOfFilesProcessed = new AtomicInteger();
-    }
-
-    public void processTransactionData()
-    {
         amountOfFilesProcessed.set(0);
-        List<File> transactionFiles = getTransactionFileList();
+        transactionFiles = getTransactionFileList();
         amountOfFilesTotal = transactionFiles.size();
-        for(File transactionFile : transactionFiles)
-        {            
-            List<Transaction> transactions = transactionReader.readTransactionsFromFile(transactionFile);
-            for(Transaction transaction : transactions)
-            {
-                transactionAnalyzer.addTransaction(transaction);
-            }
-            amountOfFilesProcessed.incrementAndGet();
-        }
+        listHilos = new AccountReporterThread[numHilos];
     }
 
-    public List<String> getOffendingAccounts()
-    {
+    public List<String> getOffendingAccounts(){
         return transactionAnalyzer.listOffendingAccounts();
     }
 
-    private List<File> getTransactionFileList()
-    {
+    private List<File> getTransactionFileList(){
         List<File> csvFiles = new ArrayList<>();
         try (Stream<Path> csvFilePaths = Files.walk(Paths.get("src/main/resources/")).filter(path -> path.getFileName().toString().endsWith(".csv"))) {
             csvFiles = csvFilePaths.map(Path::toFile).collect(Collectors.toList());
@@ -57,26 +44,34 @@ public class MoneyLaundering
         }
         return csvFiles;
     }
-
-    public static void main(String[] args)
-    {
+    
+    public static void main(String[] args){
         MoneyLaundering moneyLaundering = new MoneyLaundering();
-        Thread processingThread = new Thread(() -> moneyLaundering.processTransactionData());
-        processingThread.start();
-        while(true)
-        {
+        int inicio = 0;
+        int tamaño = amountOfFilesTotal / numHilos;
+        int res = amountOfFilesTotal % numHilos;
+        for (int j = 0; j < numHilos; j++) {
+            if (j+1 == numHilos){
+                listHilos[j] = new AccountReporterThread(inicio, tamaño + res, transactionFiles, transactionAnalyzer, moneyLaundering);
+            }
+            else{
+                listHilos[j] = new AccountReporterThread(inicio, tamaño, transactionFiles, transactionAnalyzer, moneyLaundering);
+            }
+            listHilos[j].start();
+            inicio+= tamaño;
+        }
+
+        while(amountOfFilesProcessed.get() < amountOfFilesTotal){
             Scanner scanner = new Scanner(System.in);
             String line = scanner.nextLine();
-            if(line.contains("exit"))
+            if(line.contains("exit")){
                 break;
+            }
             String message = "Processed %d out of %d files.\nFound %d suspect accounts:\n%s";
             List<String> offendingAccounts = moneyLaundering.getOffendingAccounts();
             String suspectAccounts = offendingAccounts.stream().reduce("", (s1, s2)-> s1 + "\n"+s2);
             message = String.format(message, moneyLaundering.amountOfFilesProcessed.get(), moneyLaundering.amountOfFilesTotal, offendingAccounts.size(), suspectAccounts);
             System.out.println(message);
         }
-
     }
-
-
 }

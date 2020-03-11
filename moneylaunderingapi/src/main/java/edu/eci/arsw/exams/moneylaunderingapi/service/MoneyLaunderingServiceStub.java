@@ -38,7 +38,7 @@ public class MoneyLaunderingServiceStub implements MoneyLaunderingService {
                 return suspectAccount;
             }
         }
-        throw new MoneyLaunderingException("ERROR -- La cuenta no existe");
+        throw new MoneyLaunderingException("ERROR -- La cuenta ya existe");
 
     }
 
@@ -49,9 +49,8 @@ public class MoneyLaunderingServiceStub implements MoneyLaunderingService {
 
     @Override
     public void addSuspectAccount(SuspectAccount suspacc) throws MoneyLaunderingException {
-
         for (int i = 0; i < suspectAccountList.size(); i++) {
-            if (suspectAccountList.get(i).getAmountOfSmallTransactions() == suspacc.getAmountOfSmallTransactions()) {
+            if (suspectAccountList.get(i).getAccountId().equals(suspacc.getAccountId()) && suspectAccountList.get(i).getAmountOfSmallTransactions() == suspacc.getAmountOfSmallTransactions()) {
                 throw new MoneyLaunderingException("ERROR -- La cuenta ya existe");
             }
         }
