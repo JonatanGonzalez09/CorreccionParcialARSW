@@ -53,9 +53,11 @@ public class MoneyLaundering{
         for (int j = 0; j < numHilos; j++) {
             if (j+1 == numHilos){
                 listHilos[j] = new AccountReporterThread(inicio, tamaño + res, transactionFiles, transactionAnalyzer, moneyLaundering);
+                System.out.println("Ejecuntando hilo numero:"+j);
             }
             else{
                 listHilos[j] = new AccountReporterThread(inicio, tamaño, transactionFiles, transactionAnalyzer, moneyLaundering);
+                System.out.println("Ejecuntando hilo numero:"+j);
             }
             listHilos[j].start();
             inicio+= tamaño;
@@ -65,8 +67,7 @@ public class MoneyLaundering{
         {
             Scanner scanner = new Scanner(System.in);
             String line = scanner.nextLine();
-            if(line.contains("exit"))
-            {
+            if(line.contains("exit")){
                 break;
             }
             else{
@@ -97,5 +98,5 @@ public class MoneyLaundering{
         String suspectAccounts = offendingAccounts.stream().reduce("", (s1, s2)-> s1 + "\n"+s2);
         message = String.format(message, moneyLaundering.amountOfFilesProcessed.get(), moneyLaundering.amountOfFilesTotal, offendingAccounts.size(), suspectAccounts);
         System.out.println(message);
-    }
+    } 
 }

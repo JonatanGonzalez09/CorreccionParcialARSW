@@ -14,7 +14,11 @@ public class MoneyLaunderingServiceStub implements MoneyLaunderingService {
     public MoneyLaunderingServiceStub(){
         suspectAccountList = new CopyOnWriteArrayList<>();
         SuspectAccount sAccount1 = new SuspectAccount("1", 5);
+        SuspectAccount sAccount2 = new SuspectAccount("2", 10);
+        SuspectAccount sAccount3 = new SuspectAccount("3", 15);
         suspectAccountList.add(sAccount1);
+        suspectAccountList.add(sAccount2);
+        suspectAccountList.add(sAccount3);
     }
     
     @Override
