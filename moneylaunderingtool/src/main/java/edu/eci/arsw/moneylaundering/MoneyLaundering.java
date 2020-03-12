@@ -61,17 +61,41 @@ public class MoneyLaundering{
             inicio+= tamaño;
         }
 
-        while(amountOfFilesProcessed.get() < amountOfFilesTotal){
+        while(amountOfFilesProcessed.get() < amountOfFilesTotal)
+        {
             Scanner scanner = new Scanner(System.in);
             String line = scanner.nextLine();
-            if(line.contains("exit")){
+            if(line.contains("exit"))
+            {
                 break;
             }
+            else{
+                for (int i = 0 ; i < numHilos ; i++){
+                    listHilos[i].pausar();
+                }
+            }
+            System.out.println("Pausado");
             String message = "Processed %d out of %d files.\nFound %d suspect accounts:\n%s";
             List<String> offendingAccounts = moneyLaundering.getOffendingAccounts();
             String suspectAccounts = offendingAccounts.stream().reduce("", (s1, s2)-> s1 + "\n"+s2);
             message = String.format(message, moneyLaundering.amountOfFilesProcessed.get(), moneyLaundering.amountOfFilesTotal, offendingAccounts.size(), suspectAccounts);
             System.out.println(message);
+            scanner.nextLine();
+            if(line.contains("exit"))
+            {
+                break;
+            }
+            else{
+                for (int i = 0 ; i < numHilos ; i++){
+                    listHilos[i].reanudar();
+                }
+            }
+            System.out.println("Reunudado");
         }
+        String message = "Processed %d out of %d files.\nFound %d suspect accounts:\n%s";
+        List<String> offendingAccounts = moneyLaundering.getOffendingAccounts();
+        String suspectAccounts = offendingAccounts.stream().reduce("", (s1, s2)-> s1 + "\n"+s2);
+        message = String.format(message, moneyLaundering.amountOfFilesProcessed.get(), moneyLaundering.amountOfFilesTotal, offendingAccounts.size(), suspectAccounts);
+        System.out.println(message);
     }
 }

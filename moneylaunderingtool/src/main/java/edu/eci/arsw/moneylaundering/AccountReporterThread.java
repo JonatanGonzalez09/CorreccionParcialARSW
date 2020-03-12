@@ -12,6 +12,7 @@ public class AccountReporterThread extends Thread {
     private TransactionAnalyzer transactionAnalyzer;
     private TransactionReader transactionReader;
     private MoneyLaundering moneyLaundering;
+    private boolean pausa = false;
 
     public AccountReporterThread(int inicio, int tamaño, List<File> transactionFiles,
             TransactionAnalyzer transactionAnalyzer, MoneyLaundering moneyLaundering) {
@@ -43,5 +44,16 @@ public class AccountReporterThread extends Thread {
             amountOfFilesProcessed.incrementAndGet();
         }
     }
+
+    public void pausar() {
+		pausa=true;
+    }
+
+    public void reanudar() {
+		pausa = false;
+		synchronized(this){
+			notifyAll();
+		}
+	}
 
 }
